@@ -1,0 +1,114 @@
+package com.vix.exercise.service.impl;
+
+import com.vix.exercise.database.impl.DatabaseConnectionImpl;
+import com.vix.exercise.service.impl.Polling;
+import com.vix.exercise.service.impl.PollingResource;
+import com.vix.exercise.service.poller.PollLookupService;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+
+import java.util.List;
+import java.util.ArrayList;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class PollingResourceTests {
+
+    private static final String POLL_URL = "http://vix.digital";
+    private final static String SELECT_QUERY = "select * from polling";
+    private final static String INSERT_QUERY = "insert into Polling (status) values (?)";
+    private final static String UPDATE_QUERY = "update polling set status = ? where id = ?";
+    private final static String DELETE_QUERY = "delete from polling where id = ?";
+    private List<Polling> pollingList = new ArrayList();
+
+
+    @Mock
+    private DatabaseConnectionImpl databaseConnection;
+
+    @Mock
+    private PollLookupService pollLookupService;
+
+    private PollingResource service;
+
+    private Polling polling;
+
+    @Before
+    public void setUp() {
+        service = new PollingResource(databaseConnection);
+    }
+
+    @Test
+    public void getPollingRecordListServiceTest() throws Exception {
+        polling = new Polling(1, "TEST STATUS");
+        pollingList.add(polling);
+
+        when(databaseConnection.getPollingRecords(any()))
+                .thenReturn(new ArrayList());
+
+        List<Polling> responseList = databaseConnection.getPollingRecords(SELECT_QUERY);
+        assertEquals(pollingList.size(), responseList.size());
+
+    }
+
+    @Test
+    public void addNewServiceTest() throws Exception {
+        polling = new Polling("NEW TEST STATUS");
+        pollingList.add(polling);
+
+        when(databaseConnection.createPollingRecords(anyString(), anyString()))
+                .thenReturn(anyInt());
+
+        int rowsAffected = databaseConnection.createPollingRecords(INSERT_QUERY, polling.getStatus());
+        assertTrue(rowsAffected == 1);
+
+    }
+
+    @Test
+    public void updateServiceTest() throws Exception {
+        polling = new Polling(2, "UPDATE TEST STATUS");
+        pollingList.add(polling);
+
+        when(databaseConnection.updatePollingRecords(anyString(), any()))
+                .thenReturn(anyInt());
+
+        int rowsAffected = databaseConnection.updatePollingRecords(UPDATE_QUERY, polling);
+        assertEquals(rowsAffected, 1);
+
+    }
+
+
+    @Test
+    public void deleteServiceTest() throws Exception {
+        when(databaseConnection.deletePollingRecord(anyString(), anyInt()))
+                .thenReturn(true);
+
+        Boolean blnResponse = databaseConnection.deletePollingRecord(DELETE_QUERY, 1);
+        assertTrue(blnResponse);
+
+    }
+
+    @Test
+    public void pollServiceTest() throws Exception {
+
+        String pollingResponse = pollLookupService.getVixDigitalResponse("http://vix.digital");
+        polling = new Polling(pollingResponse);
+        pollingList.add(polling);
+
+        when(PollLookupService.getVixDigitalResponse(anyString()))
+                .thenReturn(anyString());
+
+        int rowsAffected = databaseConnection.createPollingRecords(INSERT_QUERY, polling.getStatus());
+        assertEquals(rowsAffected, 1);
+
+    }
+
+}
