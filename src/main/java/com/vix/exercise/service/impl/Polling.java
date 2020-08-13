@@ -9,6 +9,7 @@ public class Polling {
     private LocalDate modifiedDate;
 
     public Polling() {}
+    public Polling(String status) {this.status = status;}
     public Polling (int id, String status) { this.id = id; this.status = status;}
     public int getId() { return this.id; }
     public void setId(int id) { this.id = id; }
