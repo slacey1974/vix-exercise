@@ -25,10 +25,10 @@ public class PollingController {
       private static final String POLL_UPDATE_DETAILS_VIEW = "update-poll-details";
       private static final String POLL_UPDATE_DETAILS_URL = "/" + POLL_UPDATE_DETAILS_VIEW;
 
-      private static final String POLL_INSERT_PAGE_VIEW = "new-poll-page";
-      private static final String POLL_INSERT_PAGE_URL = "/" + POLL_INSERT_PAGE_VIEW;
-      private static final String POLL_INSERT_DETAILS_VIEW = "new-poll-details";
-      private static final String POLL_INSERT_DETAILS_URL = "/" + POLL_INSERT_DETAILS_VIEW;
+      private static final String POLL_ADD_PAGE_VIEW = "new-poll-page";
+      private static final String POLL_ADD_PAGE_URL = "/" + POLL_ADD_PAGE_VIEW;
+      private static final String POLL_ADD_DETAILS_VIEW = "new-poll-details";
+      private static final String POLL_ADD_DETAILS_URL = "/" + POLL_ADD_DETAILS_VIEW;
 
       private static final String POLL_DELETE_PAGE_VIEW = "delete-poll-page";
       private static final String POLL_DELETE_PAGE_URL = "/" + POLL_DELETE_PAGE_VIEW;
@@ -64,14 +64,25 @@ public class PollingController {
       }
 
       @GetMapping(POLL_UPDATE_PAGE_URL)
-      public ModelAndView viewUpdatePage(@PathVariable("id") int id) {
-        //TODO retrieve single record
-        return new ModelAndView(POLL_URL + POLL_UPDATE_DETAILS_VIEW);
+      public ModelAndView viewUpdatePage() {
+
+          Response response = service.getPollingRecordList();
+          if (response.getStatus() == 200) {
+              ModelAndView model = new ModelAndView(POLL_URL + POLL_LIST_DETAILS_VIEW);
+              List<Polling> pollingList = (List<Polling>) response.getEntity();
+
+              model.addObject("records", pollingList);
+              return model;
+
+          } else {
+              return new ModelAndView(doRedirect(POLL_UNSUCCESS));
+          }
+
       }
 
-      @GetMapping(POLL_INSERT_PAGE_URL)
+      @GetMapping(POLL_ADD_PAGE_URL)
       public ModelAndView viewInsertPage() {
-        return new ModelAndView(POLL_URL + POLL_INSERT_PAGE_VIEW);
+        return new ModelAndView(POLL_URL + POLL_ADD_PAGE_VIEW);
       }
 
       @GetMapping(POLL_DELETE_PAGE_URL)
@@ -89,7 +100,7 @@ public class PollingController {
           }
       }
 
-      @PostMapping(POLL_INSERT_DETAILS_URL)
+      @PostMapping(POLL_ADD_DETAILS_URL)
       public String submitNewRecord(@RequestAttribute String status) {
         Response response = service.createPollingRecord(status);
         if (response.getStatus() == 200) {
