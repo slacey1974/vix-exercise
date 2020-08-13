@@ -1,7 +1,6 @@
 package com.vix.exercise.service.impl;
 
 import com.vix.exercise.database.impl.DatabaseConnectionImpl;
-import com.vix.exercise.service.IPollingResource;
 import com.vix.exercise.service.poller.PollLookupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
