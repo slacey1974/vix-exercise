@@ -23,12 +23,10 @@ public class DatabaseConnectionImpl {
     @Value( "${password}" )
     private String password;
     @Value( "${jdbcDriver}" )
-    private String jdbcDriver
-            ;
+    private String jdbcDriver;
 
     public List<Polling> getPollingRecords(String query) throws SQLException {
         List<Polling> pollingRecordList = new ArrayList<Polling>();
-
         Connection con = DriverManager.getConnection(url, user, password);
         Statement statement = con.createStatement();
         ResultSet rs = statement.executeQuery(query);
@@ -58,14 +56,15 @@ public class DatabaseConnectionImpl {
     }
 
     public int createPollingRecords(String query, String status) throws SQLException {
+        List<Polling> pollingRecordList = new ArrayList<Polling>();
 
         Connection con = DriverManager.getConnection(url, user, password);
         PreparedStatement preparedStatement = con.prepareStatement(query);
-        int row = 0;
+        int response = 0;
 
         try(con; preparedStatement) {
             preparedStatement.setString(1, status);
-            row = preparedStatement.executeUpdate();
+            response = preparedStatement.executeUpdate();
 
         } catch (SQLException se) {
             se.printStackTrace();
@@ -76,8 +75,7 @@ public class DatabaseConnectionImpl {
 
         }
 
-
-        return row;
+        return response;
 
     }
 
