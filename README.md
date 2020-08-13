@@ -1,11 +1,5 @@
 # vix-exercise
 
-First of all a couple of apologies
-1) I have not had time to complete the update aspect of my application
-2) MOST IMPORTANTLY I have also not had time to complete some UNIT/INTEGRATION tests.
-
-For each of these I am happy to complete as I seperate exercise.
-
 This application is a Spring Boot application. It uses a controller to integration into a API contains services
 that interact with a  MySQL database (db properties are in db.propeties file).
 
