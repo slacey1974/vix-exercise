@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
@@ -34,7 +33,7 @@ public class PollingResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response getPollingRecordList()  {
         List<Polling> pollingRecordsList = new ArrayList<>();
         try {
@@ -43,7 +42,6 @@ public class PollingResource {
             if (pollingRecordsList.isEmpty()) {
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-            GenericEntity<List> resposneList = new GenericEntity<List> (pollingRecordsList) {};
 
             return Response.status(200).entity(pollingRecordsList).build();
 
@@ -55,11 +53,11 @@ public class PollingResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response createPollingRecord(String status){
         try {
-            int result = databaseConnection.createPollingRecords(INSERT_QUERY, status);
+            int rowsAffected = databaseConnection.createPollingRecords(INSERT_QUERY, status);
             return Response.ok().build();
         } catch (RuntimeException | SQLException ex) {
             return Response.serverError().entity(ex.getMessage()).build();
@@ -67,12 +65,12 @@ public class PollingResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response poll(String url) {
         try {
             String pollingResponse = PollLookupService.getVixDigitalResponse(url);
-            int result = databaseConnection.createPollingRecords(INSERT_QUERY, pollingResponse);
+            int rowsAffected = databaseConnection.createPollingRecords(INSERT_QUERY, pollingResponse);
             return Response.ok().build();
         } catch (RuntimeException | SQLException ex) {
             return Response.serverError().entity(ex.getMessage()).build();
@@ -82,7 +80,7 @@ public class PollingResource {
     }
 
     @PUT
-    @Consumes("application/json")
+    @Consumes(MediaType.TEXT_PLAIN)
     @Path("{id}")
     public Response updatePollingRecord(@PathParam("id") int id, String status) {
 
@@ -99,7 +97,7 @@ public class PollingResource {
     }
 
     @DELETE
-    @Consumes("application/json")
+    @Consumes(MediaType.TEXT_PLAIN)
     @Path("{id}")
     public Response delete(@PathParam("id") int id) {
 
