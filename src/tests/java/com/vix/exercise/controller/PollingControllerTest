@@ -1,0 +1,210 @@
+package com.vix.exercise.controller;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.vix.exercise.controller.PollingController;
+import com.vix.exercise.service.impl.PollingResource;
+import com.vix.exercise.service.impl.Polling;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+
+import java.util.List;
+import java.util.Arrays;
+
+@RunWith(SpringRunner.class)
+public class PollingControllerTests {
+
+    private static final String POLL_URL = "/polling/";
+
+    private static final String POLL_LIST_DETAILS_VIEW = "polling-record-form";
+    private static final String POLL_LIST_DETAILS_URL = "/" + POLL_LIST_DETAILS_VIEW;
+
+    private static final String POLL_UPDATE_PAGE_VIEW = "update-poll-page";
+    private static final String POLL_UPDATE_PAGE_URL = "/" + POLL_UPDATE_PAGE_VIEW;
+    private static final String POLL_UPDATE_DETAILS_VIEW = "update-poll-details";
+    private static final String POLL_UPDATE_DETAILS_URL = "/" + POLL_UPDATE_DETAILS_VIEW;
+
+    private static final String POLL_ADD_PAGE_VIEW = "new-poll-page";
+    private static final String POLL_ADD_PAGE_URL = "/" + POLL_ADD_PAGE_VIEW;
+    private static final String POLL_ADD_DETAILS_VIEW = "new-poll-details";
+    private static final String POLL_ADD_DETAILS_URL = "/" + POLL_ADD_DETAILS_VIEW;
+
+    private static final String POLL_DELETE_PAGE_VIEW = "delete-poll-page";
+    private static final String POLL_DELETE_PAGE_URL = "/" + POLL_DELETE_PAGE_VIEW;
+    private static final String POLL_DELETE_DETAILS_VIEW = "delete-poll-details";
+    private static final String POLL_DELETE_DETAILS_URL = "/" + POLL_DELETE_DETAILS_VIEW;
+
+    private static final String POLLING_VIEW = "polling";
+    private static final String POLLING_URL = "/" + POLLING_VIEW;
+
+    private static final String POLL_SUCCESS = "/success";
+    private static final String POLL_UNSUCCESS = "/unsuccess";
+
+    private final MockMvc mockMvc;
+    private PollingResource service;
+    private Polling polling;
+
+    public PollingControllerTests() {
+        service = Mockito.mock(PollingResource.class);
+        PollingController pollingController = new PollingController(service);
+        this.mockMvc = MockMvcBuilders.standaloneSetup(pollingController).build();
+        polling = new Polling (1, "TEST STATUS");
+
+    }
+
+    @Before
+    public void setup(){
+        Mockito.reset(service);
+    }
+
+    @Test
+    public void polling_record_form_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(get(POLL_LIST_DETAILS_URL))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("records"))
+                .andExpect(view().name(POLL_URL + POLL_LIST_DETAILS_VIEW));
+    }
+
+    @Test
+    public void polling_record_form_retrieve_no_records_Unsuccesss_Displays() throws Exception {
+        mockMvc.perform(get(POLL_LIST_DETAILS_URL))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void update_polling_page_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(get(POLL_UPDATE_PAGE_URL))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("records"))
+                .andExpect(view().name(POLL_URL + POLL_UPDATE_PAGE_VIEW));
+    }
+
+    @Test
+    public void update_where_retrieve_no_records_so_Unsuccesss_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(get(POLL_UPDATE_PAGE_URL))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void add_polling_page_Displays() throws Exception {
+        mockMvc.perform(get(POLL_ADD_PAGE_URL))
+                .andExpect(view().name(POLL_URL + POLL_ADD_PAGE_VIEW));
+    }
+
+    @Test
+    public void delete_record_form_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(get(POLL_DELETE_DETAILS_URL))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("records"))
+                .andExpect(view().name(POLL_URL + POLL_DELETE_DETAILS_VIEW));
+    }
+
+    @Test
+    public void delete_record_page_request_retrieves_no_records_Unsuccesss_Displays() throws Exception {
+        mockMvc.perform(get(POLL_DELETE_DETAILS_URL))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+
+    @Test
+    public void add_record_success_Displays() throws Exception {
+        mockMvc.perform(post(POLL_ADD_DETAILS_URL)
+                .param("status", "NEW TEST STATUS"))
+                .andExpect(view().name("redirect:" + POLL_SUCCESS));
+    }
+
+    @Test
+    public void add_record_unsuccess_Displays() throws Exception {
+        mockMvc.perform(get(POLL_UPDATE_DETAILS_URL)
+                .param("status", ""))
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void update_record_success_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(get(POLL_UPDATE_DETAILS_URL)
+                .param("status", "UPDATE TEST STATUS")
+                .param("id", "2"))
+                .andExpect(view().name("redirect:" + POLL_SUCCESS));
+    }
+
+    @Test
+    public void update_record_invalid_id_unsuccess_Displays() throws Exception {
+        mockMvc.perform(post(POLL_UPDATE_DETAILS_URL)
+                .param("status", "UPDATE TEST STATUS")
+                .param("id", ""))
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void update_record_invalid_status_unsuccess_Displays() throws Exception {
+        mockMvc.perform(post(POLL_UPDATE_DETAILS_URL)
+                .param("status", "")
+                .param("id", "2"))
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void delete_record_success_Displays() throws Exception {
+        Response response=Response.status(Response.Status.OK).entity(Arrays.asList()).build();
+        when(service.getPollingRecordList()).thenReturn(response);
+
+        mockMvc.perform(post(POLL_DELETE_DETAILS_URL)
+                .param("id", "2"))
+                .andExpect(view().name("redirect:" + POLL_SUCCESS));
+    }
+
+    @Test
+    public void delete_record_invalid_id_unsuccess_Displays() throws Exception {
+        mockMvc.perform(post(POLL_DELETE_DETAILS_URL)
+                .param("id", ""))
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+    @Test
+    public void poll_success_Displays() throws Exception {
+        mockMvc.perform(post(POLL_DELETE_DETAILS_URL))
+                .andExpect(view().name("redirect:" + POLL_SUCCESS));
+    }
+
+
+    @Test
+    public void poll_unsuccess_Displays() throws Exception {
+        mockMvc.perform(post(POLL_DELETE_DETAILS_URL))
+                .andExpect(view().name("redirect:" + POLL_UNSUCCESS));
+    }
+
+}
